@@ -1,3 +1,4 @@
+import { or } from "drizzle-orm";
 import { integer, pgTable, varchar } from "drizzle-orm/pg-core";
 
 export const usersTable = pgTable("users", {
@@ -5,4 +6,6 @@ export const usersTable = pgTable("users", {
   name: varchar({ length: 255 }).notNull(),
   age: integer().notNull(),
   email: varchar({ length: 255 }).notNull().unique(),
+  orgCode: varchar({ length: 255 }).notNull().unique(),
+  phone: varchar({ length: 255 }).notNull().unique(),
 });
