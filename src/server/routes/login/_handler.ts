@@ -2,7 +2,7 @@ import { router } from "@/server/trpc";
 import { LoginUser } from "./routes/route";
 
 export const LoginRoutes= router({
-logn:LoginUser
+login:LoginUser
 
 
 });

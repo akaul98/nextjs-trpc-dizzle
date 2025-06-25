@@ -8,3 +8,6 @@ export const appRouter=router({
   user:UserRoutes,
   login:LoginRoutes,
 })
+
+
+export type AppRouter = typeof appRouter;

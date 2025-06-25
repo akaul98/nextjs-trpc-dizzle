@@ -1,21 +1,62 @@
 "use client";
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useState } from "react";
+import { trpc } from "@/lib/client/client";
+import { LoginReqDto, loginReqDto } from "@/dtos/login";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
+  const loginMutation = trpc.login.login.useMutation();
   const [isOtp, setIsOtp] = useState(false);
-  async function onClickSubmit(e: React.FormEvent<HTMLFormElement>) {
+  const form = useForm<LoginReqDto>({
+    resolver: zodResolver(loginReqDto),
+    shouldFocusError: true,
+    defaultValues: {
+      phone: "",
+      orgCode: "",
+      otp: undefined,
+    },
+  });
+  
+  async function onClickSubmit(e: React.FormEvent<HTMLFormElement>,data = form.getValues()) {
     e.preventDefault();
+    // async function firebaseAuth(token: string) {
+    //   return signInWithCustomToken(auth, token);
+    // }
+    try {
+      const res = await loginMutation.mutateAsync({
+        phone: data.phone,
+        orgCode: data.orgCode,
+        otp: data.otp,
+      });
+      console.log(res);
+      if (!res) throw new Error("Login Failed");
+      if (isOtp) {
+        setIsOtp(!res);
+      }
+      // if (res.token) {
+      //   await firebaseAuth(res.token);
+      // }
+      return res;
+    } catch (error) {
+      console.error("Form submission error:", error);
+    }
+
     setIsOtp(true);
   }
   return (
-    <form className={cn("flex flex-col gap-6", className)} {...props} onSubmit={onClickSubmit}>
+    <form
+      className={cn("flex flex-col gap-6", className)}
+      {...props}
+      onSubmit={onClickSubmit}
+    >
       <div className="flex flex-col items-center gap-2 text-center">
         <h1 className="text-2xl font-bold">Login to your account</h1>
         <p className="text-muted-foreground text-sm text-balance">
@@ -33,19 +74,16 @@ export function LoginForm({
           </div>
           <Input id="orgCode" type="text" required />
         </div>
-        {isOtp&&
-        <div className="grid gap-3">
-          <div className="flex items-center">
-            <Label htmlFor="otp">OTP</Label>
+        {isOtp && (
+          <div className="grid gap-3">
+            <div className="flex items-center">
+              <Label htmlFor="otp">OTP</Label>
             </div>
             <Input id="otp" type="text" placeholder="Enter OTP" required />
-            </div>}
-        <Button type="submit" className="w-full"
-        >
-          {isOtp?
-            "Login with OTP"
-            :"Submit"}
-            
+          </div>
+        )}
+        <Button type="submit" className="w-full">
+          {isOtp ? "Login with OTP" : "Submit"}
         </Button>
         <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
           <span className="bg-background text-muted-foreground relative z-10 px-2">
@@ -69,5 +107,5 @@ export function LoginForm({
         </a>
       </div>
     </form>
-  )
+  );
 }
