@@ -12,9 +12,9 @@ const pool = new Pool({
 export type { PgTableWithColumns } from "drizzle-orm/pg-core";
 export const drizzleConfigSchema = {
 schema: {
-  otp:OTPModel,
-  user:UserModel,
-  organization: OrgModel,
+  otpModel:OTPModel,
+  useModel:UserModel,
+  orgModel: OrgModel,
 
 }
 }
