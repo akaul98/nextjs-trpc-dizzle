@@ -1,3 +1,4 @@
+"use client";
 import { AppSidebar } from "@/components/app-sidebar"
 import { ChartAreaInteractive } from "@/components/chart-area-interactive"
 import { DataTable } from "@/components/data-table"
@@ -9,8 +10,11 @@ import {
 } from "@/components/ui/sidebar"
 
 import data from "./data.json"
+import { useUser } from "../contexts/users/useUser"
 
 export default function Page() {
+  const user=useUser()
+  console.log(user)
   return (
     <SidebarProvider
       style={

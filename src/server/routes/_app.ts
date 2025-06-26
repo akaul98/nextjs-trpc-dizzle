@@ -5,7 +5,7 @@ import { LoginRoutes } from "./login/_handler";
 
 export const appRouter=router({
   org:OrgRoutes,
-  user:UserRoutes,
+ // user:UserRoutes,
   login:LoginRoutes,
 })
 

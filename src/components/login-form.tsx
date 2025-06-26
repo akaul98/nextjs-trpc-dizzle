@@ -10,6 +10,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { trpc } from "@/lib/client/client";
 import { signInWithCustomToken } from "firebase/auth";
 import { auth } from "@/lib/firebase";
+import { redirect } from "next/navigation";
 
 export function LoginForm({
   className,
@@ -39,6 +40,7 @@ export function LoginForm({
         setIsOtp(true);
         if (res.token) {
         await firebaseAuth(res.token);
+        redirect("/dashboard");
       }
       }
       console.log("Submit logic goes here");
