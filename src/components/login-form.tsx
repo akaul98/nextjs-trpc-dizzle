@@ -1,61 +1,57 @@
 "use client";
+import { useForm, Controller } from "react-hook-form";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
-import { trpc } from "@/lib/client/client";
 import { LoginReqDto, loginReqDto } from "@/dtos/login";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { trpc } from "@/lib/client/client";
+import { signInWithCustomToken } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
-  const loginMutation = trpc.login.login.useMutation();
   const [isOtp, setIsOtp] = useState(false);
-  const form = useForm<LoginReqDto>({
+  const { control, handleSubmit } = useForm<LoginReqDto>({
     resolver: zodResolver(loginReqDto),
-    shouldFocusError: true,
     defaultValues: {
       phone: "",
       orgCode: "",
       otp: undefined,
     },
   });
-  
-  async function onClickSubmit(e: React.FormEvent<HTMLFormElement>,data = form.getValues()) {
-    e.preventDefault();
-    // async function firebaseAuth(token: string) {
-    //   return signInWithCustomToken(auth, token);
-    // }
+
+  async function firebaseAuth(token: string) {
+  return signInWithCustomToken(auth, token);
+}
+
+  const loginMutation= trpc.login.login.useMutation()
+  const onSubmit = async (data: LoginReqDto) => {
+    console.log("Form submitted with data:", data);
     try {
-      const res = await loginMutation.mutateAsync({
-        phone: data.phone,
-        orgCode: data.orgCode,
-        otp: data.otp,
-      });
-      console.log(res);
-      if (!res) throw new Error("Login Failed");
-      if (isOtp) {
-        setIsOtp(!res);
+      let res=await loginMutation.mutateAsync(data)  
+      console.log("Login response:", res);
+      if(res){
+        setIsOtp(true);
+        if (res.token) {
+        await firebaseAuth(res.token);
       }
-      // if (res.token) {
-      //   await firebaseAuth(res.token);
-      // }
-      return res;
+      }
+      console.log("Submit logic goes here");
     } catch (error) {
       console.error("Form submission error:", error);
     }
+  };
 
-    setIsOtp(true);
-  }
   return (
     <form
       className={cn("flex flex-col gap-6", className)}
       {...props}
-      onSubmit={onClickSubmit}
+      onSubmit={handleSubmit(onSubmit)}
     >
       <div className="flex flex-col items-center gap-2 text-center">
         <h1 className="text-2xl font-bold">Login to your account</h1>
@@ -66,20 +62,38 @@ export function LoginForm({
       <div className="grid gap-6">
         <div className="grid gap-3">
           <Label htmlFor="phone">Phone</Label>
-          <Input id="phone" type="phone" placeholder="9764XXXXXX" required />
+          <Controller
+            name="phone"
+            control={control}
+            render={({ field }) => (
+              <Input id="phone" placeholder="9764XXXXXX" required {...field} />
+            )}
+          />
         </div>
         <div className="grid gap-3">
           <div className="flex items-center">
             <Label htmlFor="orgCode">OrgCode</Label>
           </div>
-          <Input id="orgCode" type="text" required />
+          <Controller
+            name="orgCode"
+            control={control}
+            render={({ field }) => (
+              <Input id="orgCode" type="text" required {...field} />
+            )}
+          />
         </div>
         {isOtp && (
           <div className="grid gap-3">
             <div className="flex items-center">
               <Label htmlFor="otp">OTP</Label>
             </div>
-            <Input id="otp" type="text" placeholder="Enter OTP" required />
+            <Controller
+              name="otp"
+              control={control}
+              render={({ field }) => (
+                <Input id="otp" type="text" placeholder="Enter OTP" required {...field} />
+              )}
+            />
           </div>
         )}
         <Button type="submit" className="w-full">
